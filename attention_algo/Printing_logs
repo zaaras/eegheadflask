@@ -1,0 +1,14 @@
+fig = pl.figure();
+	ax = fig.add_subplot(111);
+	y_av = movingaverage(highBeta,100);
+	high_beta = ax.plot(timeHBeta,y_av,'r',label="High Beta");
+
+	print ax
+	count = 0;
+	#logTimes is the time_stamps from the activity_table
+	#logStrings is the input_strings from the activity_table
+	for time in logTimes:
+		ax.annotate(logStrings[count], xy=(time,100000*count), xytext=(-10,10),
+			textcoords = 'offset points', ha = 'center', va = 'bottom')
+		count += 1;
+		ax.axvline(time,ymin=0,ymax=max(y_av), linewidth=1)
