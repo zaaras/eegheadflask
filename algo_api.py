@@ -4,14 +4,14 @@ from flask import request
 
 app = Flask(__name__)
 
-wave0 = [];
-wave1 = [];
-wave2 = [];
-wave3 = [];
-wave4 = [];
-wave5 = [];
-wave6 = [];
-wave7 = [];
+delta = [];
+high_alpha = [];
+high_beta = [];
+low_alpha = [];
+low_beta = [];
+low_gamma = [];
+mid_gamma = [];
+theta = [];
 time = [];
 attention_native = [];
 meditation_native = [];
@@ -27,14 +27,14 @@ def api_post_waves():
 	data2 = json.loads(data2)
 	for d in data2:
 		time.append(d[0])
-		wave0.append((d[1])['wave0'])
-		wave1.append((d[1])['wave1'])
-		wave2.append((d[1])['wave2'])
-		wave3.append((d[1])['wave3'])
-		wave4.append((d[1])['wave4'])
-		wave5.append((d[1])['wave5'])
-		wave6.append((d[1])['wave6'])
-		wave7.append((d[1])['wave7'])
+		delta.append((d[1])['wave0'])
+		high_alpha.append((d[1])['wave1'])
+		high_beta.append((d[1])['wave2'])
+		low_alpha.append((d[1])['wave3'])
+		low_beta.append((d[1])['wave4'])
+		low_gamma.append((d[1])['wave5'])
+		mid_gamma.append((d[1])['wave6'])
+		theta.append((d[1])['wave7'])
 		attention_native.append((d[1])['attention'])
 		meditation_native.append((d[1])['meditation'])
 	return json.dumps(data)
