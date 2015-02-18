@@ -27,6 +27,14 @@ waves = [];
 def api_root():
 	return 'Welcome'
 
+
+@app.route('/post_test', methods = ['POST'])
+def api_post_test():
+	data = request.get_json()
+	print data
+	return json.jsonify({'received_text': data['text']})
+
+
 @app.route('/post_waves', methods = ['POST'])
 def api_post_waves():
 	data = request.get_json()
@@ -54,7 +62,7 @@ def api_post_waves():
 	waves.append(low_gamma)
 	waves.append(mid_gamma)
 	waves.append(theta)
-	
+
 	remove_outliers()
 	standardize(waves)
 	aggregate = [];
@@ -98,6 +106,7 @@ def api_post_waves():
 def api_get_results():
 	return time
 
+
 def remove_outliers():
 	outliers = []
 	for wave in waves:
@@ -105,7 +114,7 @@ def remove_outliers():
 			if (wave[i] > 1400000):
 				del time[i]
 				outliers.append(i)
-	
+
 	for outlier in outliers:
 		for wave in waves:
 			del wave[outlier]
