@@ -58,7 +58,7 @@ def api_post_waves():
 	remove_outliers()
 	standardize(waves)
 	aggregate = [];
-	aggregate.append(waves[2]);
+	aggregate.append(waves[4]);
 
 	#average(waves)
 	#aggregate(waves)
@@ -83,7 +83,8 @@ def api_post_waves():
 
 	for i in range(len(betaSamples)):
 		if(len(betaSamples[i])>20):
-			del betaSamples[i][20];
+			for j in range(20,len(betaSamples[i])):
+				del betaSamples[i][j];
 
 	print (len(betaSamples[0]));	
 	# target tells svm which waves are grouped so [1,1,1,3] means first 3 are grouped last one is from another group
