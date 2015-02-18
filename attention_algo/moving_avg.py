@@ -8,6 +8,13 @@ import numpy as np
 import pylab as pl
 
 
+#    str += signalStr + "," + ep.delta + "," + ep.highAlpha
+#                                                        + "," + ep.highBeta + "," + ep.lowAlpha + ","
+#                                                        + ep.lowBeta + "," + ep.lowGamma + ","
+#                                                        + ep.midGamma + "," + ep.theta + "," + attention
+#                                                        + "," + meditation;
+
+
 con = lite.connect('activity_log.db')
 
 def average(wave,time_stamps, window) :
@@ -44,10 +51,16 @@ with con:
 
 	readings = [];
 	time_stamp = [];
+
+	highAlpha = [];
+	lowAlpha = [];
+
 	highBeta = [];
 	lowBeta = [];
 	highGamma = [];
 	lowGamma = [];
+	timeHAlpha = [];
+	timeLAlpha = [];
 	timeHBeta = [];
 	timeLBeta = [];
 	timeHGamma = [];
@@ -80,6 +93,18 @@ with con:
 		if(row[0].split(",")[9] not in 'null'):
 			attention_native.append(int(row[0].split(",")[9]));
 			timeAttentionNative.append(int(row[1].split("A")[0].split("T")[1]));
+
+		tmp = int(row[0].split(",")[2]);
+		if(not(tmp>20000000)):
+			highAlpha.append(tmp);
+			timeHAlpha.append(int(row[1].split("A")[0].split("T")[1]));
+
+
+		tmp = int(row[0].split(",")[2]);
+		if(not(tmp>20000000)):
+			lowAlpha.append(tmp);
+			timeLAlpha.append(int(row[1].split("A")[0].split("T")[1]));
+
 		
 		tmp = int(row[0].split(",")[3]);
 		if(not(tmp>20000000)):
@@ -100,6 +125,19 @@ with con:
 		if(not(tmp>20000000)):
 			lowGamma.append(tmp);
 			timeLGamma.append(int(row[1].split("A")[0].split("T")[1]));
+
+	mean = np.mean(highAlpha);
+	std = np.std(highAlpha);
+	highAlpha_new=[];
+	for num in highAlpha:
+		highAlpha_new.append((num-mean)/std);
+
+	mean = np.mean(lowAlpha);
+	std = np.std(lowAlpha);
+	lowAlpha_new=[];
+	for num in lowAlpha:
+		lowAlpha_new.append((num-mean)/std);
+
 
 	mean = np.mean(highBeta);
 	std = np.std(highBeta);
@@ -125,6 +163,14 @@ with con:
 	lowGamma_new=[];
 	for num in lowGamma:
 		lowGamma_new.append((num-mean)/std);
+
+	highBetaOverAlpha = [];
+	for i in range(0, min(len(highAlpha_new),len(highBeta_new))):
+		highBetaOverAlpha.append(highAlpha_new[i]/highBeta_new[i]);
+
+	lowBetaOverAlpha = [];
+	for i in range(0,min(len(lowAlpha_new),len(lowBeta_new))):
+		lowBetaOverAlpha.append(lowAlpha_new[i]/lowBeta_new[i]);
 
 #--------------------------------------------
 	y_av = average(highGamma_new,timeHGamma, 10);
@@ -175,11 +221,11 @@ with con:
 	for i in range(min([len(attentionhb),len(attentionlb)])):
 		aggregate.append(attentionhb[i]+attentionlb[i]);
 
-	pl.subplot(7,1,1)
+	pl.subplot(9,1,1)
 	signal_quality = pl.plot(qualityTime,quality,'b',label="Signal Quality");
 	
 	avg_attention = average(attention_native, timeAttentionNative, 10);
-	pl.subplot(7,1,2);
+	pl.subplot(9,1,2);
 	attention = pl.plot(avg_attention[1],avg_attention[0],'r',label="Native Attention");
 	#attention = pl.plot(timeAttentionNative,attention_native,'r',label="Native Attention");
 	pl.legend();	
@@ -192,7 +238,7 @@ with con:
 
 
 
-	pl.subplot(7,1,3);
+	pl.subplot(9,1,3);
 	count = 0;
 	for time in logTimes:
 		pl.annotate(logStrings[count], xy=(time,0), xytext=(-10,10),
@@ -205,28 +251,43 @@ with con:
 	aggregate_atten = pl.plot(avg_highGamma[1],aggregate,'r',label="Aggregate");
 	pl.legend();	
 
-	pl.subplot(7,1,4);
+	pl.subplot(9,1,4);
 	high_gamma = pl.plot(avg_highGamma[1],avg_highGamma[0],'r',label="High Gamma");
 	pl.legend();
 
 	avg_lowGamma = average(lowGamma_new,timeLGamma, 10);
-	pl.subplot(7,1,5);
+	pl.subplot(9,1,5);
 	low_gamma = pl.plot(avg_lowGamma[1],avg_lowGamma[0],'r',label="Low Gamma");
 	#y_av = movingaverage(highGamma, 500)
 	#high_gamma = pl.plot(timeHGamma,y_av,'b',label="High Gamma");
 	pl.legend();
 	
 	avg_highBeta = average(highBeta_new,timeHBeta, 10);
-	pl.subplot(7,1,6);
+	pl.subplot(9,1,6);
 	#y_av = movingaverage(highBeta,500);
 	high_beta = pl.plot(avg_highBeta[1],avg_highBeta[0],'r',label="High Beta");
 	pl.legend();	
 
 	avg_lowBeta = average(lowBeta_new,timeLBeta, 10);
-	pl.subplot(7,1,7);
+	pl.subplot(9,1,7);
 	#y_av = movingaverage(lowBeta, 500)
 	#low_beta = pl.plot(timeLBeta,y_av,'g',label="Low Beta");
 	low_beta = pl.plot(avg_lowBeta[1],avg_lowBeta[0],'r',label="Low Beta");
 	pl.legend();
-	
+
+
+	avg_highBetaOverAlpha = average(highBetaOverAlpha,timeHBeta, 10);
+	pl.subplot(9,1,8);
+	#y_av = movingaverage(lowBeta, 500)
+	#low_beta = pl.plot(timeLBeta,y_av,'g',label="Low Beta");
+	low_beta = pl.plot(avg_highBetaOverAlpha[1],avg_highBetaOverAlpha[0],'r',label="High beta over alpha");
+	pl.legend();
+
+	avg_lowBetaOverAlpha = average(lowBetaOverAlpha,timeLBeta, 10);
+	pl.subplot(9,1,9);
+	#y_av = movingaverage(lowBeta, 500)
+	#low_beta = pl.plot(timeLBeta,y_av,'g',label="Low Beta");
+	low_beta = pl.plot(avg_lowBetaOverAlpha[1],avg_lowBetaOverAlpha[0],'r',label="low beta over alpha");
+	pl.legend();
+		
 	pl.show();
