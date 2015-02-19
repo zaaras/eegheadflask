@@ -29,6 +29,7 @@ def api_root():
 
 @app.route('/post_waves', methods = ['POST'])
 def api_post_waves():
+	results = [];
 	data = request.get_json()
 	data2 = json.dumps(data)
 	data2 = json.loads(data2)
@@ -54,7 +55,8 @@ def api_post_waves():
 	waves.append(low_gamma)
 	waves.append(mid_gamma)
 	waves.append(theta)
-	
+
+	print time;	
 	remove_outliers()
 	standardize(waves)
 	aggregate = [];
@@ -65,35 +67,38 @@ def api_post_waves():
 
 	sampleCount = 0;
 	betaSamples = [];
-	
+	time_range = [];	
+
 	betaSamples.append([])
-	print len(aggregate);
-	for i in range(len(aggregate)):
-		betaSamples[sampleCount].append(aggregate[i])
+	for i in range(len(aggregate[0])):
+		betaSamples[sampleCount].append(aggregate[0][i])
 		if(i%20==0 and i!=0):
+			time_range.append([i-20,i])
 			sampleCount += 1;
 			betaSamples.append([])
 
 
-	print (len(attention_native));
-	#pl.plot(timeOverall,attention_native,'r');
-			
 	clf = joblib.load('model.pkl') 	
-
 
 	for i in range(len(betaSamples)):
 		if(len(betaSamples[i])>20):
 			for j in range(20,len(betaSamples[i])):
 				del betaSamples[i][j];
 
-	print (len(betaSamples[0]));	
-	# target tells svm which waves are grouped so [1,1,1,3] means first 3 are grouped last one is from another group
 	for i in range(len(betaSamples)):
-		print clf.predict(betaSamples[1])
-
-
-	print data
-	return json.dumps(data)
+		if (len(betaSamples[i])==20):
+			results.append(clf.predict(betaSamples[i]))
+	
+	jsonobj = []
+	for i in range(len(time_range)):
+		obj = {} 
+		obj['begin_time']=time_range[i][0]
+		obj['end_time']=time_range[i][1]
+		obj['atten']= results[i][0]
+		jsonobj.append([i,obj])
+	
+	print json.dumps(jsonobj)
+	return json.dumps(jsonobj)
 
 @app.route('/get_results', methods = ['GET'])
 def api_get_results():
@@ -102,10 +107,12 @@ def api_get_results():
 def remove_outliers():
 	outliers = []
 	for wave in waves:
+		#print "wav len" +  len(wave)-1;
 		for i in range (0,(len(wave)-1)):
 			if (wave[i] > 1400000):
-				del time[i]
-				outliers.append(i)
+				if(i<len(time)-1):
+					del time[i]
+					outliers.append(i)
 	
 	for outlier in outliers:
 		for wave in waves:
