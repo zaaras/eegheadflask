@@ -7,7 +7,7 @@ import matplotlib.pyplot as pyplot
 import numpy as np
 import pylab as pl
 
-con = lite.connect('/home/umar/Downloads/activityLog.db')
+con = lite.connect('jan7_attention.db')
 
 
 with con:    

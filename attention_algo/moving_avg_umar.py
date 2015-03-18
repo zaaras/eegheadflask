@@ -15,8 +15,8 @@ import pylab as pl
 #                                                        + "," + meditation;
 
 
-#con = lite.connect('final_activityLog.db')
-con = lite.connect('activity_log.db')
+con = lite.connect('final_activityLog.db')
+#con = lite.connect('activity_log.db')
 
 def average(wave,time_stamps, window) :
 	avg_wave = [];
@@ -178,8 +178,10 @@ with con:
 		alphaOverHighBeta.append(1/highBetaOverAlpha[i]);
 
 	lowBetaOverAlpha = [];
+	alphaOverLowBeta = [];
 	for i in range(0,min(len(lowAlpha_new),len(lowBeta_new))):
 		lowBetaOverAlpha.append(lowAlpha_new[i]/lowBeta_new[i]);
+		alphaOverLowBeta.append(1/lowBetaOverAlpha[i]);
 
 #--------------------------------------------
 	y_av = average(highGamma_new,timeHGamma, 10);
@@ -221,14 +223,36 @@ with con:
 			attentionlb.append((y_av[0])[i]);
 		else:
 			attentionlb.append(0);
+#------------------------------------------------
+	y_av = average(highAlpha_new,timeHAlpha, 10);
+	mean = np.mean(y_av[0]);
+	attentionha = [];
+
+	for i in range(len(y_av[1])):
+		if (y_av[0])[i] > mean:
+			attentionha.append((y_av[0])[i]);
+		else:
+			attentionha.append(0);
+#-------------------------------------------------
+	y_av = average(lowAlpha_new,timeLAlpha, 10);
+	mean = np.mean(y_av[0]);
+	attentionla = [];
+
+	for i in range(len(y_av[1])):
+		if (y_av[0])[i] > mean:
+			attentionla.append((y_av[0])[i]);
+		else:
+			attentionla.append(0);
+
 
 	aggregate = []
 	# change to max
 	#for i in range(min([len(attentionlb),len(attentionhb),len(attentionhg),len(attentionlg)])):
 	#	aggregate.append((attentionlb[i] + attentionhb[i] + attentionhg[i] + attentionlg[i]));
 
-	for i in range(min([len(attentionhb),len(attentionlb),len(attentionhg)])):
-		aggregate.append(attentionhb[i]+attentionhg[i]+attentionlb[i]);
+	for i in range(min([len(attentionha),len(attentionla)])):
+		aggregate.append(attentionha[i]+attentionla[i]);
+
 
 	pl.subplot(9,1,1)
 	signal_quality = pl.plot(qualityTime,quality,'b',label="Signal Quality");
@@ -238,65 +262,34 @@ with con:
 	attention = pl.plot(avg_attention[1],avg_attention[0],'r',label="Native Meditation");
 	#attention = pl.plot(timeAttentionNative,attention_native,'r',label="Native Attention");
 	pl.legend();	
-	count = 0;
-#	for time in logTimes:
-#		pl.annotate(logStrings[count], xy=(time,0), xytext=(-10,10),
-#			textcoords = 'offset points', ha = 'center', va = 'bottom')
-#		count += 1;
-#		pl.axvline(time,ymin=0,ymax=max(y_av[0]), linewidth=1)
+
+	#avg_highAlpha = average(highAlpha_new,timeHAlpha, 10);
+	#pl.subplot(9,1,3);
+	#high_alpha = pl.plot(avg_highAlpha[1],avg_highAlpha[0],'r',label="High Alpha");
+	#pl.legend();	
+
+	#avg_lowAlpha = average(lowAlpha_new,timeLAlpha, 10);
+	#pl.subplot(9,1,4);
+	#low_alpha = pl.plot(avg_lowAlpha[1],avg_lowAlpha[0],'r',label="Low Alpha");
+	#pl.legend();
 
 
-
+	avg_alphaOverHighBeta = average(alphaOverHighBeta,timeHAlpha, 10);
 	pl.subplot(9,1,3);
-	count = 0;
-#	for time in logTimes:
-#		pl.annotate(logStrings[count], xy=(time,0), xytext=(-10,10),
-#			textcoords = 'offset points', ha = 'center', va = 'bottom')
-#		count += 1;
-#		pl.axvline(time,ymin=0,ymax=max(y_av[0]), linewidth=1)
-
-
-	avg_highGamma = average(highGamma_new,timeHGamma, 10);
-	aggregate_atten = pl.plot(avg_highGamma[1],aggregate,'r',label="Aggregate");
-	pl.legend();	
-
-	pl.subplot(9,1,4);
-	high_gamma = pl.plot(avg_highGamma[1],avg_highGamma[0],'r',label="High Gamma");
-	pl.legend();
-
-	avg_lowGamma = average(lowGamma_new,timeLGamma, 10);
-	pl.subplot(9,1,5);
-	low_gamma = pl.plot(avg_lowGamma[1],avg_lowGamma[0],'r',label="Low Gamma");
-	#y_av = movingaverage(highGamma, 500)
-	#high_gamma = pl.plot(timeHGamma,y_av,'b',label="High Gamma");
-	pl.legend();
-	
-	avg_highBeta = average(highBeta_new,timeHBeta, 10);
-	pl.subplot(9,1,6);
-	#y_av = movingaverage(highBeta,500);
-	high_beta = pl.plot(avg_highBeta[1],avg_highBeta[0],'r',label="High Beta");
-	pl.legend();	
-
-	avg_lowBeta = average(lowBeta_new,timeLBeta, 10);
-	pl.subplot(9,1,7);
 	#y_av = movingaverage(lowBeta, 500)
 	#low_beta = pl.plot(timeLBeta,y_av,'g',label="Low Beta");
-	low_beta = pl.plot(avg_lowBeta[1],avg_lowBeta[0],'r',label="Low Beta");
+	low_alpOverBeta = pl.plot(avg_alphaOverHighBeta[1],avg_alphaOverHighBeta[0],'r',label="High Alpha/Beta");
 	pl.legend();
 
+	#avg_alphaOverLowBeta = average(alphaOverLowBeta,timeLAlpha, 10);
+	#pl.subplot(9,1,6);
+	#low_alpOverBeta = pl.plot(avg_alphaOverLowBeta[1],avg_alphaOverLowBeta[0],'r',label="High Alpha/Beta");
+	#pl.legend();
 
-	avg_highBetaOverAlpha = average(highBetaOverAlpha,timeHBeta, 10);
-	pl.subplot(9,1,8);
-	#y_av = movingaverage(lowBeta, 500)
-	#low_beta = pl.plot(timeLBeta,y_av,'g',label="Low Beta");
-	low_beta = pl.plot(avg_highBetaOverAlpha[1],avg_highBetaOverAlpha[0],'r',label="High Beta/Alpha");
-	pl.legend();
+	#avg_highGamma = average(highGamma_new,timeHGamma, 10);
+	#pl.subplot(9,1,7);
+	#aggregate_atten = pl.plot(avg_highGamma[1],aggregate,'r',label="Aggregate");
+	#pl.legend();	
 
-	avg_lowBetaOverAlpha = average(lowBetaOverAlpha,timeLBeta, 10);
-	pl.subplot(9,1,9);
-	#y_av = movingaverage(lowBeta, 500)
-	#low_beta = pl.plot(timeLBeta,y_av,'g',label="Low Beta");
-	low_beta = pl.plot(avg_lowBetaOverAlpha[1],avg_lowBetaOverAlpha[0],'r',label="Low Beta/Alpha");
-	pl.legend();
-		
+
 	pl.show();

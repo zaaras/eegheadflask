@@ -58,43 +58,19 @@ def api_post_waves():
 
 	print time;	
 	remove_outliers()
-	aggregate = standardize(low_beta)
+	standardize(waves)
+	aggregate = [];
+	aggregate.append(waves[4]);
+
+	print aggregate;
+
+	#average(waves)
+	#aggregate(waves)
 
 	sampleCount = 0;
 	betaSamples = [];
 	time_range = [];	
 
-	#svm algo
-	betaSamples.append([])
-	print len(aggregate)
-	for i in range(len(aggregate)):
-		betaSamples[sampleCount].append(aggregate[i])
-		if(i%20==0 and i!=0):
-			time_range.append([i-20,i])
-			sampleCount += 1;
-			betaSamples.append([])
-
-
-	clf = joblib.load('model.pkl') 	
-
-	for i in range(len(betaSamples)):
-		if(len(betaSamples[i])>20):
-			for j in range(20,len(betaSamples[i])):
-				del betaSamples[i][j];
-
-	for i in range(len(betaSamples)):
-		if (len(betaSamples[i])==20):
-			results.append(clf.predict(betaSamples[i]))
-	
-	jsonobj = []
-	print time_range
-	for i in range(len(time_range)):
-		obj = {} 
-		obj['begin_time']=time_range[i][0]
-		obj['end_time']=time_range[i][1]
-		obj['atten']= results[i][0]
-		jsonobj.append([i,obj])
-	
 	print json.dumps(jsonobj)
 	return json.dumps(jsonobj)
 
@@ -105,21 +81,19 @@ def api_get_results():
 def remove_outliers():
 	outliers = []
 	for wave in waves:
+		#print "wav len" +  len(wave)-1;
 		for i in range (0,(len(wave)-1)):
 			if (wave[i] > 1400000):
-				if((i<len(time)-1) and (i not in outliers)):
-					#del time[i]
+				if(i<len(time)-1):
+					del time[i]
 					outliers.append(i)
 	
-	outliers.sort()
-	outliers.reverse()
-
 	for outlier in outliers:
 		for wave in waves:
 			del wave[outlier]
-		del time[outlier]
 
 	return
+
 
 def standardize(wave):
 	mean = np.mean(wave);
